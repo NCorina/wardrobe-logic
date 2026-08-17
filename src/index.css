@@ -1,0 +1,72 @@
+/* Global Styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  font-family: 'Source Code Pro', monospace;
+  background-color: #fdfaf6;
+  color: #7a6c5d;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 0;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Source Code Pro', monospace;
+  line-height: 1.2;
+  margin-bottom: 10px;
+  color: #2f2f2f;
+}
+
+/* Code */
+code, pre {
+  font-family: 'Source Code Pro', monospace;
+}
+
+/* Global box sizing */
+* {
+  box-sizing: border-box;
+}
+
+/* Link Styling (restored) */
+a {
+  color: #fca5a5; /* Lighter and softer rose for links */
+}
+
+/* Descriptive text tone */
+.hero-text,
+.text-subtle,
+.text-gray-700,
+.text-gray-600,
+.text-lg {
+  color: #9e5c5c !important; /* Darker soft coral for strong visibility */
+}
+
+
+
+/* Lighter rose background overlay */
+.rose-overlay {
+  background-color: rgba(255, 230, 245, 0); /* Slightly lighter soft rose overlay */
+  backdrop-filter: blur(6px);
+}
+
+/* Rose buttons */
+.bright-rose-button {
+  background-color: #fecdd3; /* Tailwind rose-200 */
+  color: #6b4b4b;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.bright-rose-button:hover {
+  background-color: #fda4af; /* rose-300 */
+}
+
