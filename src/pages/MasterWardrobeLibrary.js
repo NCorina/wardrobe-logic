@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { collectionGroup, getDocs, query, where } from "firebase/firestore";
+import { collectionGroup, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
+import { deleteObject, getStorage, ref } from "firebase/storage";
 import { db } from "../firebase";
 
 const ALL = "all";
@@ -17,6 +18,7 @@ export default function MasterWardrobeLibrary({ user }) {
   const [category, setCategory] = useState(ALL);
   const [ownerId, setOwnerId] = useState(ALL);
   const [search, setSearch] = useState("");
+  const [deletingId, setDeletingId] = useState("");
 
   useEffect(() => {
     const loadPieces = async () => {
@@ -26,11 +28,17 @@ export default function MasterWardrobeLibrary({ user }) {
           where("isPublic", "==", true)
         );
         const snapshot = await getDocs(publicPiecesQuery);
-        setPieces(
-          snapshot.docs.map((document) => ({
+        const loadedPieces = snapshot.docs.map((document) => ({
             id: document.id,
             ownerId: ownerIdFromDocument(document),
             ...document.data(),
+          }));
+
+        setPieces(
+          loadedPieces.map((piece) => ({
+            ...piece,
+            contributorName:
+              piece.contributorName || piece.pseudonym || "",
           }))
         );
       } catch (loadError) {
@@ -58,7 +66,7 @@ export default function MasterWardrobeLibrary({ user }) {
       if (!contributorMap.has(piece.ownerId)) {
         contributorMap.set(
           piece.ownerId,
-          piece.pseudonym || (piece.isFounderPiece ? "Founder" : "Community member")
+          piece.contributorName || (piece.isFounderPiece ? "Founder" : "Community member")
         );
       }
     });
@@ -95,6 +103,38 @@ export default function MasterWardrobeLibrary({ user }) {
   const selectView = (nextView) => {
     setView(nextView);
     setOwnerId(ALL);
+  };
+
+  const deletePiece = async (event, piece) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!user || piece.ownerId !== user.uid) return;
+    if (!window.confirm(`Delete “${piece.name}”? This cannot be undone.`)) return;
+
+    setDeletingId(piece.id);
+    try {
+      if (piece.imageUrl) {
+        try {
+          await deleteObject(ref(getStorage(), piece.imageUrl));
+        } catch (storageError) {
+          if (storageError.code !== "storage/object-not-found") throw storageError;
+        }
+      }
+
+      await deleteDoc(doc(db, "users", user.uid, "wardrobe", piece.id));
+      setPieces((currentPieces) =>
+        currentPieces.filter(
+          (currentPiece) =>
+            currentPiece.id !== piece.id || currentPiece.ownerId !== piece.ownerId
+        )
+      );
+    } catch (deleteError) {
+      console.error("Unable to delete wardrobe piece", deleteError);
+      alert("We couldn't delete this piece. Please try again.");
+    } finally {
+      setDeletingId("");
+    }
   };
 
   return (
@@ -235,8 +275,18 @@ export default function MasterWardrobeLibrary({ user }) {
                       </p>
                     )}
                     <p className="mt-3 text-xs text-stone-500">
-                      Shared by {piece.pseudonym || (piece.isFounderPiece ? "the founder" : "a community member")}
+                      Shared by {piece.contributorName || (piece.isFounderPiece ? "the founder" : "a community member")}
                     </p>
+                    {user && piece.ownerId === user.uid && (
+                      <button
+                        type="button"
+                        onClick={(event) => deletePiece(event, piece)}
+                        disabled={deletingId === piece.id}
+                        className="mt-4 border border-red-300 px-3 py-2 text-xs text-red-700 hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {deletingId === piece.id ? "Deleting…" : "Delete my piece"}
+                      </button>
+                    )}
                   </div>
                 </Link>
               </article>
