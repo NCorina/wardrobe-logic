@@ -20,6 +20,11 @@ import CommunityStyle from "./pages/CommunityStyle";
 import CommunityItemDetailPage from "./pages/CommunityItemDetailPage";
 import BookmarksPage from "./pages/BookmarksPage";
 import MasterWardrobeLibrary from "./pages/MasterWardrobeLibrary";
+import StyleRequestsPage from "./pages/StyleRequestsPage";
+import CreateStyleRequestPage from "./pages/CreateStyleRequestPage";
+import StyleRequestDetailPage from "./pages/StyleRequestDetailPage";
+import StyleConnectionsPage from "./pages/StyleConnectionsPage";
+import ProfileSetup from "./pages/ProfileSetup";
 
 const CURATOR_EMAIL = "corinanicoara01@gmail.com";
 
@@ -56,6 +61,35 @@ function App() {
             <Route path="/community-style" element={<CommunityStyle />} />
             <Route path="/community-style/:itemName" element={<CommunityItemDetailPage user={user} />} />
             <Route path="/library" element={<MasterWardrobeLibrary user={user} />} />
+            <Route path="/style-requests" element={<StyleRequestsPage user={user} />} />
+            <Route
+              path="/style-requests/new"
+              element={
+                <PrivateRoute user={user}>
+                  <CreateStyleRequestPage user={user} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/style-requests/:requestId"
+              element={<StyleRequestDetailPage user={user} />}
+            />
+            <Route
+              path="/style-connections"
+              element={
+                <PrivateRoute user={user}>
+                  <StyleConnectionsPage user={user} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute user={user}>
+                  <ProfileSetup />
+                </PrivateRoute>
+              }
+            />
 
             {/* 🧵 Protected Routes */}
             <Route

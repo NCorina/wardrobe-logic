@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { collectionGroup, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 import { deleteObject, getStorage, ref } from "firebase/storage";
 import { db } from "../firebase";
+import MemberName from "../components/MemberName";
 
 const ALL = "all";
 
@@ -275,7 +276,14 @@ export default function MasterWardrobeLibrary({ user }) {
                       </p>
                     )}
                     <p className="mt-3 text-xs text-stone-500">
-                      Shared by {piece.contributorName || (piece.isFounderPiece ? "the founder" : "a community member")}
+                      Shared by{" "}
+                      <MemberName
+                        userId={piece.ownerId}
+                        fallback={
+                          piece.contributorName ||
+                          (piece.isFounderPiece ? "the founder" : "Style lover")
+                        }
+                      />
                     </p>
                     {user && piece.ownerId === user.uid && (
                       <button

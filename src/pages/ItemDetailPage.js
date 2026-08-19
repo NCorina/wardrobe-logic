@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { db } from "../firebase";
 import {
   doc,
@@ -7,7 +7,7 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
 export default function ItemDetail({ user }) {
   const { itemId } = useParams();
@@ -39,9 +39,21 @@ export default function ItemDetail({ user }) {
   const deleteItem = async () => {
     const confirm = window.confirm("Are you sure you want to delete this item?");
     if (!confirm) return;
-    const itemRef = doc(db, "users", user.uid, "wardrobe", itemId);
-    await deleteDoc(itemRef);
-    navigate("/wardrobe");
+    try {
+      if (item.imageUrl) {
+        try {
+          await deleteObject(ref(getStorage(), item.imageUrl));
+        } catch (storageError) {
+          if (storageError.code !== "storage/object-not-found") throw storageError;
+        }
+      }
+      const itemRef = doc(db, "users", user.uid, "wardrobe", itemId);
+      await deleteDoc(itemRef);
+      navigate("/wardrobe");
+    } catch (error) {
+      console.error("Unable to delete wardrobe piece", error);
+      alert("We couldn't delete this piece. Please try again.");
+    }
   };
 
   const saveEdits = async () => {
@@ -53,12 +65,18 @@ export default function ItemDetail({ user }) {
       imageUrl = await getDownloadURL(imageRef);
     }
 
+    const profileSnapshot = await getDoc(doc(db, "users", user.uid));
+    const profileName = profileSnapshot.exists() ? profileSnapshot.data().name : "";
+    const contributorName =
+      editedPseudonym.trim() || profileName || user.displayName || "Style lover";
+
     const itemRef = doc(db, "users", user.uid, "wardrobe", itemId);
     await updateDoc(itemRef, {
       name: editedName,
       inspiration: editedText,
       imageUrl,
       pseudonym: editedPseudonym,
+      contributorName,
       category: editedCategory.trim(),
       isFounderPiece:
         item.isFounderPiece || user.email === "corinanicoara01@gmail.com",
@@ -69,6 +87,7 @@ export default function ItemDetail({ user }) {
       inspiration: editedText,
       imageUrl,
       pseudonym: editedPseudonym,
+      contributorName,
       category: editedCategory.trim(),
       isFounderPiece:
         prev.isFounderPiece || user.email === "corinanicoara01@gmail.com",
@@ -78,9 +97,13 @@ export default function ItemDetail({ user }) {
   };
 
   const toggleShare = async () => {
+    const profileSnapshot = await getDoc(doc(db, "users", user.uid));
+    const profileName = profileSnapshot.exists() ? profileSnapshot.data().name : "";
+    const contributorName =
+      item.pseudonym || profileName || user.displayName || "Style lover";
     const itemRef = doc(db, "users", user.uid, "wardrobe", itemId);
-    await updateDoc(itemRef, { isPublic: !item.isPublic });
-    setItem(prev => ({ ...prev, isPublic: !prev.isPublic }));
+    await updateDoc(itemRef, { isPublic: !item.isPublic, contributorName });
+    setItem(prev => ({ ...prev, isPublic: !prev.isPublic, contributorName }));
   };
 
   if (!item) return <div className="p-10">Loading...</div>;
@@ -186,6 +209,14 @@ export default function ItemDetail({ user }) {
           >
             {item.isPublic ? "Unshare from Community" : "Share for Inspiration"}
           </button>
+          <div className="mt-5">
+            <Link
+              to={`/style-requests/new?piece=${item.id}`}
+              className="inline-block bg-stone-900 px-5 py-2 text-sm text-white no-underline hover:bg-rose-800"
+            >
+              Style this with me
+            </Link>
+          </div>
         </div>
       </div>
     </div>

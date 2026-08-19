@@ -21,10 +21,11 @@ const NavBar = ({ user }) => {
           <Link to="/library" className="hover:text-rose-200">
             Library
           </Link>
-
-          <Link to="/community-style" className="hover:text-rose-200">
-            Community Styling
+          <Link to="/style-requests" className="hover:text-rose-200">
+            Style Requests
           </Link>
+
+          
           <Link
   to="/bookmarks"
   className="text-sm text-rose-700 hover:text-rose-900 transition px-3"
@@ -38,6 +39,12 @@ const NavBar = ({ user }) => {
             <>
               <Link to="/wardrobe" className="hover:text-rose-200">
                 My Wardrobe
+              </Link>
+              <Link to="/style-connections" className="hover:text-rose-200">
+                Style Friends
+              </Link>
+              <Link to="/profile" className="hover:text-rose-200">
+                Profile
               </Link>
               <button
                 onClick={() => auth.signOut()}

@@ -1,7 +1,8 @@
 // src/pages/ProfileSetup.js
 import React, { useState, useEffect } from "react";
 import { auth, db } from "../firebase";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { updateProfile } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
 const ProfileSetup = () => {
@@ -40,6 +41,10 @@ const ProfileSetup = () => {
       location,
       email: user.email,
     }, { merge: true });
+    await setDoc(doc(db, "publicProfiles", user.uid), {
+      displayName: name.trim(),
+    }, { merge: true });
+    await updateProfile(user, { displayName: name.trim() });
 
     alert("Profile updated!");
     navigate("/wardrobe");
@@ -57,6 +62,8 @@ const ProfileSetup = () => {
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full border p-2 rounded"
+          required
+          maxLength={40}
         />
         <input
           type="text"

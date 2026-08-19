@@ -6,14 +6,17 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   sendPasswordResetEmail,
+  updateProfile,
 } from "firebase/auth";
-import { auth } from "../firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
@@ -21,7 +24,18 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       if (isSignup) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        const cleanName = displayName.trim();
+        await updateProfile(credential.user, { displayName: cleanName });
+        await Promise.all([
+          setDoc(doc(db, "users", credential.user.uid), {
+            name: cleanName,
+            email: credential.user.email,
+          }, { merge: true }),
+          setDoc(doc(db, "publicProfiles", credential.user.uid), {
+            displayName: cleanName,
+          }, { merge: true }),
+        ]);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -34,7 +48,17 @@ const LoginPage = () => {
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const credential = await signInWithPopup(auth, provider);
+      const googleName = credential.user.displayName || "Style lover";
+      await Promise.all([
+        setDoc(doc(db, "users", credential.user.uid), {
+          name: googleName,
+          email: credential.user.email,
+        }, { merge: true }),
+        setDoc(doc(db, "publicProfiles", credential.user.uid), {
+          displayName: googleName,
+        }, { merge: true }),
+      ]);
       navigate("/wardrobe");
     } catch (error) {
       alert(error.message);
@@ -64,6 +88,17 @@ const LoginPage = () => {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {isSignup && (
+            <input
+              type="text"
+              placeholder="Display name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              required
+              maxLength={40}
+              className="w-full border border-gray-300 p-2 rounded"
+            />
+          )}
           <input
             type="email"
             placeholder="Email"

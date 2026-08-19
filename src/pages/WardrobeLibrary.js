@@ -5,13 +5,17 @@ import { db } from "../firebase";
 import {
   collection,
   addDoc,
+  deleteDoc,
+  doc,
+  getDoc,
   onSnapshot
 } from "firebase/firestore";
 import {
   getStorage,
   ref,
   uploadBytes,
-  getDownloadURL
+  getDownloadURL,
+  deleteObject
 } from "firebase/storage";
 
 export default function WardrobeLibrary({ user }) {
@@ -19,6 +23,7 @@ export default function WardrobeLibrary({ user }) {
   const [newItemName, setNewItemName] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [category, setCategory] = useState("");
+  const [deletingId, setDeletingId] = useState("");
 
   useEffect(() => {
     const unsub = onSnapshot(
@@ -49,9 +54,13 @@ export default function WardrobeLibrary({ user }) {
       imageUrl = await getDownloadURL(imageRef);
     }
 
+    const profileSnapshot = await getDoc(doc(db, "users", user.uid));
+    const profileName = profileSnapshot.exists() ? profileSnapshot.data().name : "";
+
     await addDoc(collection(db, "users", user.uid, "wardrobe"), {
       name: newItemName,
       imageUrl,
+      contributorName: profileName || user.displayName || "Style lover",
       category: category.trim(),
       createdAt: new Date(),
       isPublic: false,
@@ -61,6 +70,30 @@ export default function WardrobeLibrary({ user }) {
     setNewItemName("");
     setImageFile(null);
     setCategory("");
+  };
+
+  const deleteItem = async (event, item) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!window.confirm(`Delete “${item.name}”? This cannot be undone.`)) return;
+
+    setDeletingId(item.id);
+    try {
+      if (item.imageUrl) {
+        try {
+          await deleteObject(ref(getStorage(), item.imageUrl));
+        } catch (storageError) {
+          if (storageError.code !== "storage/object-not-found") throw storageError;
+        }
+      }
+      await deleteDoc(doc(db, "users", user.uid, "wardrobe", item.id));
+    } catch (error) {
+      console.error("Unable to delete wardrobe piece", error);
+      alert("We couldn't delete this piece. Please try again.");
+    } finally {
+      setDeletingId("");
+    }
   };
 
   return (
@@ -106,6 +139,14 @@ export default function WardrobeLibrary({ user }) {
                     <h3 className="text-sm font-medium text-rose-700 truncate">
                       {item.name}
                     </h3>
+                    <button
+                      type="button"
+                      onClick={(event) => deleteItem(event, item)}
+                      disabled={deletingId === item.id}
+                      className="mt-2 text-xs text-neutral-500 underline hover:text-red-600 disabled:opacity-50"
+                    >
+                      {deletingId === item.id ? "Deleting…" : "Delete piece"}
+                    </button>
                   </div>
                 </div>
               </Link>
