@@ -18,7 +18,10 @@ const NavBar = ({ user }) => {
         {/* Navigation Links */}
         <div className="flex space-x-4 items-center text-sm">
           {/* Public Links */}
-          
+          <Link to="/library" className="hover:text-rose-200">
+            Library
+          </Link>
+
           <Link to="/community-style" className="hover:text-rose-200">
             Community Styling
           </Link>

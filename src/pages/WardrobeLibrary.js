@@ -18,6 +18,7 @@ export default function WardrobeLibrary({ user }) {
   const [items, setItems] = useState([]);
   const [newItemName, setNewItemName] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [category, setCategory] = useState("");
 
   useEffect(() => {
     const unsub = onSnapshot(
@@ -51,12 +52,15 @@ export default function WardrobeLibrary({ user }) {
     await addDoc(collection(db, "users", user.uid, "wardrobe"), {
       name: newItemName,
       imageUrl,
+      category: category.trim(),
       createdAt: new Date(),
       isPublic: false,
+      isFounderPiece: user.email === "corinanicoara01@gmail.com",
     });
 
     setNewItemName("");
     setImageFile(null);
+    setCategory("");
   };
 
   return (
@@ -117,6 +121,12 @@ export default function WardrobeLibrary({ user }) {
                 placeholder="Name (e.g. Silk Camisole)"
                 value={newItemName}
                 onChange={(e) => setNewItemName(e.target.value)}
+                className="w-full px-4 py-2 border border-neutral-300 bg-white bg-opacity-70 rounded-full text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-rose-300"
+              />
+              <input
+                placeholder="Category (e.g. Dress, Jacket, Skirt)"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-4 py-2 border border-neutral-300 bg-white bg-opacity-70 rounded-full text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-rose-300"
               />
               <input

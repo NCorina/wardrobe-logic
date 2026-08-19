@@ -18,6 +18,7 @@ export default function ItemDetail({ user }) {
   const [editedText, setEditedText] = useState("");
   const [editedPseudonym, setEditedPseudonym] = useState("");
   const [newImageFile, setNewImageFile] = useState(null);
+  const [editedCategory, setEditedCategory] = useState("");
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -29,6 +30,7 @@ export default function ItemDetail({ user }) {
         setEditedName(data.name || "");
         setEditedText(data.inspiration || "");
         setEditedPseudonym(data.pseudonym || "");
+        setEditedCategory(data.category || "");
       }
     };
     fetchItem();
@@ -57,6 +59,9 @@ export default function ItemDetail({ user }) {
       inspiration: editedText,
       imageUrl,
       pseudonym: editedPseudonym,
+      category: editedCategory.trim(),
+      isFounderPiece:
+        item.isFounderPiece || user.email === "corinanicoara01@gmail.com",
     });
     setItem(prev => ({
       ...prev,
@@ -64,6 +69,9 @@ export default function ItemDetail({ user }) {
       inspiration: editedText,
       imageUrl,
       pseudonym: editedPseudonym,
+      category: editedCategory.trim(),
+      isFounderPiece:
+        prev.isFounderPiece || user.email === "corinanicoara01@gmail.com",
     }));
     setEditing(false);
     setNewImageFile(null);
@@ -115,6 +123,13 @@ export default function ItemDetail({ user }) {
                   onChange={(e) => setEditedPseudonym(e.target.value)}
                   className="w-full border border-neutral-300 p-2 rounded text-sm"
                   placeholder="Name or pseudonym (optional)"
+                />
+                <input
+                  type="text"
+                  value={editedCategory}
+                  onChange={(e) => setEditedCategory(e.target.value)}
+                  className="w-full border border-neutral-300 p-2 rounded text-sm"
+                  placeholder="Category (e.g. Dress, Jacket, Skirt)"
                 />
                 <input
                   type="file"

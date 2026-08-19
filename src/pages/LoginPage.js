@@ -5,6 +5,7 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +14,7 @@ const LoginPage = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -36,6 +38,21 @@ const LoginPage = () => {
       navigate("/wardrobe");
     } catch (error) {
       alert(error.message);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!email.trim()) {
+      setMessage("Enter your email address first, then select Forgot password.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      setMessage("If an account exists for this email, a password-reset link is on its way.");
+    } catch (error) {
+      console.error("Password reset failed", error);
+      setMessage("We could not send the reset email. Check the address and try again.");
     }
   };
 
@@ -70,7 +87,23 @@ const LoginPage = () => {
           >
             {isSignup ? "Sign Up" : "Log In"}
           </button>
+
+          {!isSignup && (
+            <button
+              type="button"
+              onClick={handlePasswordReset}
+              className="w-full text-sm text-rose-700 underline hover:text-rose-900"
+            >
+              Forgot password?
+            </button>
+          )}
         </form>
+
+        {message && (
+          <p className="mt-4 text-center text-sm text-gray-600" role="status">
+            {message}
+          </p>
+        )}
 
         <div className="mt-4 text-center">
           <button

@@ -19,6 +19,7 @@ import ItemDetailPage from "./pages/ItemDetailPage";
 import CommunityStyle from "./pages/CommunityStyle";
 import CommunityItemDetailPage from "./pages/CommunityItemDetailPage";
 import BookmarksPage from "./pages/BookmarksPage";
+import MasterWardrobeLibrary from "./pages/MasterWardrobeLibrary";
 
 const CURATOR_EMAIL = "corinanicoara01@gmail.com";
 
@@ -54,6 +55,7 @@ function App() {
             <Route path="/curation/:id/edit" element={<EditCurationPage />} />
             <Route path="/community-style" element={<CommunityStyle />} />
             <Route path="/community-style/:itemName" element={<CommunityItemDetailPage user={user} />} />
+            <Route path="/library" element={<MasterWardrobeLibrary user={user} />} />
 
             {/* 🧵 Protected Routes */}
             <Route
