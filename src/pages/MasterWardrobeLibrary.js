@@ -279,6 +279,7 @@ export default function MasterWardrobeLibrary({ user }) {
                       Shared by{" "}
                       <MemberName
                         userId={piece.ownerId}
+                        linkToProfile
                         fallback={
                           piece.contributorName ||
                           (piece.isFounderPiece ? "the founder" : "Style lover")

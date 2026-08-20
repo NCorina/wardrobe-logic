@@ -194,7 +194,11 @@ export default function StyleRequestsPage({ user }) {
                   <div className="mt-5 flex justify-between text-xs text-stone-500">
                     <span>
                       Asked by{" "}
-                      <MemberName userId={request.createdBy} fallback={request.creatorName} />
+                      <MemberName
+                        userId={request.createdBy}
+                        fallback={request.creatorName}
+                        linkToProfile
+                      />
                     </span>
                     <span>{request.responseCount || 0} responses</span>
                   </div>

@@ -19,6 +19,7 @@ import { db, storage } from "../firebase";
 import {
   FollowStylistButton,
   ReciprocalHelpBadge,
+  StyleFriendInviteButton,
   StylistReputation,
 } from "../components/StylistReputation";
 import MemberName from "../components/MemberName";
@@ -198,13 +199,32 @@ export default function StyleRequestDetailPage({ user }) {
         </Link>
 
         <section className="mt-8 grid gap-8 border-b border-stone-300 pb-12 md:grid-cols-2">
-          <div className="aspect-[4/5] bg-stone-200">
-            {request.pieceImageUrl && (
-              <img
-                src={request.pieceImageUrl}
-                alt={request.pieceName}
-                className="h-full w-full object-cover"
-              />
+          <div className="space-y-5">
+            <figure>
+              <div className="aspect-[4/5] bg-stone-200">
+                {request.pieceImageUrl && (
+                  <img
+                    src={request.pieceImageUrl}
+                    alt={request.pieceName}
+                    className="h-full w-full object-cover"
+                  />
+                )}
+              </div>
+              <figcaption className="mt-2 text-xs uppercase tracking-wider text-stone-500">
+                The wardrobe piece
+              </figcaption>
+            </figure>
+            {request.wearingPhotoUrl && (
+              <figure>
+                <img
+                  src={request.wearingPhotoUrl}
+                  alt={`${request.pieceName} worn by the requester`}
+                  className="max-h-[560px] w-full bg-stone-200 object-contain"
+                />
+                <figcaption className="mt-2 text-xs uppercase tracking-wider text-stone-500">
+                  Optional fit photograph shared by the requester
+                </figcaption>
+              </figure>
             )}
           </div>
           <div className="flex flex-col justify-center">
@@ -220,8 +240,21 @@ export default function StyleRequestDetailPage({ user }) {
             <blockquote className="mt-8 border-l-2 border-rose-300 pl-5 text-lg leading-8 text-stone-700">
               {request.prompt}
             </blockquote>
+            {request.fitContext && (
+              <div className="mt-5 bg-white p-5">
+                <p className="text-xs uppercase tracking-wider text-rose-700">
+                  Fit and comfort context
+                </p>
+                <p className="mt-2 text-sm leading-6 text-stone-700">{request.fitContext}</p>
+              </div>
+            )}
             <p className="mt-6 text-sm text-stone-500">
-              Asked by <MemberName userId={request.createdBy} fallback={request.creatorName} />
+              Asked by{" "}
+              <MemberName
+                userId={request.createdBy}
+                fallback={request.creatorName}
+                linkToProfile
+              />
             </p>
           </div>
         </section>
@@ -258,7 +291,11 @@ export default function StyleRequestDetailPage({ user }) {
                   <p className="leading-7 text-stone-700">{response.text}</p>
                   <p className="mt-4 text-xs text-stone-500">
                     Suggested by{" "}
-                    <MemberName userId={response.userId} fallback={response.responderName} />
+                    <MemberName
+                      userId={response.userId}
+                      fallback={response.responderName}
+                      linkToProfile
+                    />
                   </p>
                   <StylistReputation userId={response.userId} />
                   <ReciprocalHelpBadge
@@ -269,6 +306,11 @@ export default function StyleRequestDetailPage({ user }) {
                     currentUser={user}
                     stylistId={response.userId}
                     stylistName={response.responderName}
+                  />
+                  <StyleFriendInviteButton
+                    currentUser={user}
+                    otherUserId={response.userId}
+                    otherUserName={response.responderName}
                   />
                   {request.helpfulResponseId === response.id && (
                     <span className="mt-3 text-xs uppercase tracking-widest text-rose-700">
@@ -327,7 +369,20 @@ export default function StyleRequestDetailPage({ user }) {
                   This is your request. Mark the response that most inspired you.
                 </p>
               ) : (
-                <form onSubmit={submitResponse} className="max-w-2xl space-y-5 bg-white p-6">
+                <div className="max-w-2xl">
+                  {responses.some((response) => response.userId === user.uid) && (
+                    <div className="mb-6 bg-rose-50 p-5">
+                      <p className="text-sm text-stone-700">
+                        You have exchanged styling help with {request.creatorName || "this member"}.
+                      </p>
+                      <StyleFriendInviteButton
+                        currentUser={user}
+                        otherUserId={request.createdBy}
+                        otherUserName={request.creatorName}
+                      />
+                    </div>
+                  )}
+                <form onSubmit={submitResponse} className="space-y-5 bg-white p-6">
                   <h3 className="text-2xl text-stone-900">Share a styling idea</h3>
                   <textarea
                     value={responseText}
@@ -355,6 +410,7 @@ export default function StyleRequestDetailPage({ user }) {
                     {submitting ? "Sharing…" : "Share my styling idea"}
                   </button>
                 </form>
+                </div>
               )
             ) : (
               <Link to="/login" className="text-rose-700 underline">

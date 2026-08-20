@@ -19,6 +19,10 @@ export default function ItemDetail({ user }) {
   const [editedPseudonym, setEditedPseudonym] = useState("");
   const [newImageFile, setNewImageFile] = useState(null);
   const [editedCategory, setEditedCategory] = useState("");
+  const [editedBrand, setEditedBrand] = useState("");
+  const [editedColor, setEditedColor] = useState("");
+  const [editedMaterial, setEditedMaterial] = useState("");
+  const [editedTags, setEditedTags] = useState("");
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -31,6 +35,10 @@ export default function ItemDetail({ user }) {
         setEditedText(data.inspiration || "");
         setEditedPseudonym(data.pseudonym || "");
         setEditedCategory(data.category || "");
+        setEditedBrand(data.brand || "");
+        setEditedColor(data.color || "");
+        setEditedMaterial(data.material || "");
+        setEditedTags(Array.isArray(data.tags) ? data.tags.join(", ") : data.tags || "");
       }
     };
     fetchItem();
@@ -69,6 +77,10 @@ export default function ItemDetail({ user }) {
     const profileName = profileSnapshot.exists() ? profileSnapshot.data().name : "";
     const contributorName =
       editedPseudonym.trim() || profileName || user.displayName || "Style lover";
+    const normalizedTags = editedTags
+      .split(",")
+      .map((tag) => tag.trim().toLowerCase())
+      .filter(Boolean);
 
     const itemRef = doc(db, "users", user.uid, "wardrobe", itemId);
     await updateDoc(itemRef, {
@@ -78,6 +90,10 @@ export default function ItemDetail({ user }) {
       pseudonym: editedPseudonym,
       contributorName,
       category: editedCategory.trim(),
+      brand: editedBrand.trim(),
+      color: editedColor.trim(),
+      material: editedMaterial.trim(),
+      tags: normalizedTags,
       isFounderPiece:
         item.isFounderPiece || user.email === "corinanicoara01@gmail.com",
     });
@@ -89,6 +105,10 @@ export default function ItemDetail({ user }) {
       pseudonym: editedPseudonym,
       contributorName,
       category: editedCategory.trim(),
+      brand: editedBrand.trim(),
+      color: editedColor.trim(),
+      material: editedMaterial.trim(),
+      tags: normalizedTags,
       isFounderPiece:
         prev.isFounderPiece || user.email === "corinanicoara01@gmail.com",
     }));
@@ -154,6 +174,41 @@ export default function ItemDetail({ user }) {
                   className="w-full border border-neutral-300 p-2 rounded text-sm"
                   placeholder="Category (e.g. Dress, Jacket, Skirt)"
                 />
+                <details className="border border-neutral-300 bg-white p-4">
+                  <summary className="cursor-pointer text-sm font-medium text-neutral-700">
+                    Optional matching details
+                  </summary>
+                  <div className="mt-4 space-y-3">
+                    <input
+                      type="text"
+                      value={editedBrand}
+                      onChange={(e) => setEditedBrand(e.target.value)}
+                      className="w-full border border-neutral-300 p-2 rounded text-sm"
+                      placeholder="Brand"
+                    />
+                    <input
+                      type="text"
+                      value={editedColor}
+                      onChange={(e) => setEditedColor(e.target.value)}
+                      className="w-full border border-neutral-300 p-2 rounded text-sm"
+                      placeholder="Main color or pattern"
+                    />
+                    <input
+                      type="text"
+                      value={editedMaterial}
+                      onChange={(e) => setEditedMaterial(e.target.value)}
+                      className="w-full border border-neutral-300 p-2 rounded text-sm"
+                      placeholder="Material"
+                    />
+                    <input
+                      type="text"
+                      value={editedTags}
+                      onChange={(e) => setEditedTags(e.target.value)}
+                      className="w-full border border-neutral-300 p-2 rounded text-sm"
+                      placeholder="Style words, separated by commas"
+                    />
+                  </div>
+                </details>
                 <input
                   type="file"
                   accept="image/*"
@@ -171,6 +226,20 @@ export default function ItemDetail({ user }) {
               <>
                 <h1 className="text-3xl font-semibold text-rose-800 mb-2">{item.name}</h1>
                 <p className="italic text-sm text-neutral-700 mb-2">{item.inspiration}</p>
+                {(item.brand || item.color || item.material) && (
+                  <p className="mb-2 text-sm text-neutral-600">
+                    {[item.brand, item.color, item.material].filter(Boolean).join(" · ")}
+                  </p>
+                )}
+                {item.tags?.length > 0 && (
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    {item.tags.map((tag) => (
+                      <span key={tag} className="bg-rose-100 px-2 py-1 text-xs text-rose-800">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <p className="text-xs text-neutral-500 italic mb-4">
                   {item.pseudonym ? `Shared as ${item.pseudonym}` : "Private name"}
                 </p>

@@ -25,6 +25,7 @@ import CreateStyleRequestPage from "./pages/CreateStyleRequestPage";
 import StyleRequestDetailPage from "./pages/StyleRequestDetailPage";
 import StyleConnectionsPage from "./pages/StyleConnectionsPage";
 import ProfileSetup from "./pages/ProfileSetup";
+import PublicStyleProfilePage from "./pages/PublicStyleProfilePage";
 
 const CURATOR_EMAIL = "corinanicoara01@gmail.com";
 
@@ -89,6 +90,10 @@ function App() {
                   <ProfileSetup />
                 </PrivateRoute>
               }
+            />
+            <Route
+              path="/members/:userId"
+              element={<PublicStyleProfilePage user={user} />}
             />
 
             {/* 🧵 Protected Routes */}

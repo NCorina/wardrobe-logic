@@ -85,7 +85,6 @@ export function StylistReputation({ userId, compact = false }) {
 
 export function FollowStylistButton({ currentUser, stylistId, stylistName }) {
   const [following, setFollowing] = useState(false);
-  const [followedByStylist, setFollowedByStylist] = useState(false);
   const [saving, setSaving] = useState(false);
   const followId = currentUser && stylistId ? `${currentUser.uid}_${stylistId}` : "";
 
@@ -95,14 +94,6 @@ export function FollowStylistButton({ currentUser, stylistId, stylistName }) {
       setFollowing(snapshot.exists());
     });
   }, [followId]);
-
-  useEffect(() => {
-    if (!currentUser || !stylistId) return undefined;
-    return onSnapshot(
-      doc(db, "styleFollows", `${stylistId}_${currentUser.uid}`),
-      (snapshot) => setFollowedByStylist(snapshot.exists())
-    );
-  }, [currentUser, stylistId]);
 
   if (!currentUser || !stylistId || currentUser.uid === stylistId) return null;
 
@@ -137,15 +128,106 @@ export function FollowStylistButton({ currentUser, stylistId, stylistName }) {
       disabled={saving}
       className="mt-3 border border-rose-300 px-3 py-2 text-xs text-rose-800 hover:bg-rose-50 disabled:opacity-50"
     >
-      {saving
-        ? "Saving…"
-        : following && followedByStylist
-          ? "Style friends · Unfollow"
-          : following
-            ? "Following · Unfollow"
-            : followedByStylist
-              ? "Follow back"
-              : "Follow stylist"}
+      {saving ? "Saving…" : following ? "Saved stylist · Remove" : "Save this stylist"}
+    </button>
+  );
+}
+
+export function StyleFriendInviteButton({ currentUser, otherUserId, otherUserName }) {
+  const [friendship, setFriendship] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const memberIds = currentUser && otherUserId
+    ? [currentUser.uid, otherUserId].sort()
+    : [];
+  const friendshipId = memberIds.join("_");
+
+  useEffect(() => {
+    if (!friendshipId) return undefined;
+    return onSnapshot(doc(db, "styleFriendships", friendshipId), (snapshot) => {
+      setFriendship(snapshot.exists() ? snapshot.data() : null);
+    });
+  }, [friendshipId]);
+
+  if (!currentUser || !otherUserId || currentUser.uid === otherUserId) return null;
+
+  const sendInvitation = async () => {
+    setSaving(true);
+    try {
+      const profileSnapshot = await getDoc(doc(db, "users", currentUser.uid));
+      const requesterName = profileSnapshot.exists()
+        ? profileSnapshot.data().name || ""
+        : "";
+      await setDoc(doc(db, "styleFriendships", friendshipId), {
+        memberIds,
+        requestedBy: currentUser.uid,
+        requesterName: requesterName || currentUser.displayName || "Style lover",
+        recipientId: otherUserId,
+        recipientName: otherUserName || "Style lover",
+        status: "pending",
+        createdAt: serverTimestamp(),
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const respond = async (status) => {
+    setSaving(true);
+    try {
+      if (status === "declined") {
+        await deleteDoc(doc(db, "styleFriendships", friendshipId));
+      } else {
+        await setDoc(
+          doc(db, "styleFriendships", friendshipId),
+          { status: "accepted", acceptedAt: serverTimestamp() },
+          { merge: true }
+        );
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (friendship?.status === "accepted") {
+    return <p className="mt-3 text-xs font-medium text-rose-700">✓ Style friends</p>;
+  }
+
+  if (friendship?.status === "pending" && friendship.requestedBy === currentUser.uid) {
+    return <p className="mt-3 text-xs text-stone-500">Style-friend invitation sent</p>;
+  }
+
+  if (friendship?.status === "pending") {
+    return (
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => respond("accepted")}
+          disabled={saving}
+          className="bg-rose-700 px-3 py-2 text-xs text-white disabled:opacity-50"
+        >
+          Accept style-friend invitation
+        </button>
+        <button
+          type="button"
+          onClick={() => respond("declined")}
+          disabled={saving}
+          className="border border-stone-300 px-3 py-2 text-xs text-stone-600 disabled:opacity-50"
+        >
+          Decline
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={sendInvitation}
+      disabled={saving}
+      className="ml-2 mt-3 border border-stone-400 px-3 py-2 text-xs text-stone-700 hover:border-rose-500 hover:text-rose-800 disabled:opacity-50"
+    >
+      {saving ? "Sending…" : "Invite as style friend"}
     </button>
   );
 }

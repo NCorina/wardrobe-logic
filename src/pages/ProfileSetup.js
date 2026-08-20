@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 const ProfileSetup = () => {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
+  const [styleBio, setStyleBio] = useState("");
+  const [styleSpecialties, setStyleSpecialties] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -23,6 +25,16 @@ const ProfileSetup = () => {
         const data = userSnap.data();
         setName(data.name || "");
         setLocation(data.location || "");
+      }
+      const publicProfileSnap = await getDoc(doc(db, "publicProfiles", user.uid));
+      if (publicProfileSnap.exists()) {
+        const publicData = publicProfileSnap.data();
+        setStyleBio(publicData.styleBio || "");
+        setStyleSpecialties(
+          Array.isArray(publicData.styleSpecialties)
+            ? publicData.styleSpecialties.join(", ")
+            : publicData.styleSpecialties || ""
+        );
       }
       setLoading(false);
     };
@@ -43,6 +55,11 @@ const ProfileSetup = () => {
     }, { merge: true });
     await setDoc(doc(db, "publicProfiles", user.uid), {
       displayName: name.trim(),
+      styleBio: styleBio.trim(),
+      styleSpecialties: styleSpecialties
+        .split(",")
+        .map((specialty) => specialty.trim().toLowerCase())
+        .filter(Boolean),
     }, { merge: true });
     await updateProfile(user, { displayName: name.trim() });
 
@@ -72,6 +89,32 @@ const ProfileSetup = () => {
           onChange={(e) => setLocation(e.target.value)}
           className="w-full border p-2 rounded"
         />
+        <div className="border-t border-stone-200 pt-4">
+          <p className="mb-3 text-sm font-medium text-stone-700">Public style profile</p>
+          <p className="mb-3 text-xs leading-5 text-stone-500">
+            Your display name, style introduction, and specialties are public.
+            Your email and location are never shown on this profile.
+          </p>
+          <textarea
+            placeholder="A short introduction to your style or the kind of help you enjoy giving"
+            value={styleBio}
+            onChange={(e) => setStyleBio(e.target.value)}
+            maxLength={240}
+            rows={4}
+            className="w-full border p-2 rounded"
+          />
+          <input
+            type="text"
+            placeholder="Style specialties, separated by commas"
+            value={styleSpecialties}
+            onChange={(e) => setStyleSpecialties(e.target.value)}
+            maxLength={160}
+            className="mt-3 w-full border p-2 rounded"
+          />
+          <p className="mt-1 text-xs text-stone-500">
+            For example: color, vintage, petite proportions, workwear, layering
+          </p>
+        </div>
         <button
           type="submit"
           className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded w-full"
