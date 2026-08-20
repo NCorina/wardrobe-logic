@@ -11,7 +11,7 @@ const NavBar = ({ user }) => {
         {/* Logo / Title */}
         <div className="text-2xl font-bold tracking-wide">
           <Link to="/" className="hover:text-rose-200">
-            Wardrobe-Logic
+            Wardrobe Logics
           </Link>
         </div>
 

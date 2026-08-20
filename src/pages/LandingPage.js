@@ -13,7 +13,7 @@ const LandingPage = () => {
             Love what you wear—and help someone else love getting dressed.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-stone-600 md:text-xl">
-            Wardrobe Logic is a body-positive style community where you can get
+            Wardrobe Logics is a body-positive style community where you can get
             fresh ideas for clothes you already own, share your styling talent,
             and find style friends who understand your taste.
           </p>
