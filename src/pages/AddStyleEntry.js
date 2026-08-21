@@ -35,10 +35,8 @@ export default function AddStyleEntry() {
 
     setSubmitting(true);
     try {
-      const photoReference = ref(
-        storage,
-        `stylingPhotos/${user.uid}/${Date.now()}_${photo.name}`
-      );
+
+    // Firebase upload and Firestore operations continue here
       await uploadBytes(photoReference, photo);
       const photoURL = await getDownloadURL(photoReference);
 
@@ -58,14 +56,21 @@ export default function AddStyleEntry() {
         shared: true,
         createdAt: serverTimestamp(),
       });
+      
+    // Firebase upload and Firestore operations continue here
 
       navigate(`/item/${itemId}`);
     } catch (error) {
-      console.error("Unable to share styled look", error);
-      alert("We couldn't share this look. Please try again.");
-      setSubmitting(false);
-    }
-  };
+  console.error("Style sharing failed:", error);
+  window.alert(
+    `We couldn't share this style: ${
+      error?.code || error?.message || "Unknown error"
+    }`
+  );
+} finally {
+  setSubmitting(false);
+}
+};
 
   if (!item) {
     return <main className="min-h-screen bg-[#f8f3ef] p-12 text-center">Opening your piece…</main>;
