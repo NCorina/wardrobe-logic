@@ -34,7 +34,16 @@ export default function AddStyleEntry() {
     }
 
     setSubmitting(true);
-    try {
+    setSubmitting(true);
+
+try {
+  const photoReference = ref(
+    storage,
+    `stylingPhotos/${user.uid}/${Date.now()}_${photo.name}`
+  );
+
+  await uploadBytes(photoReference, photo);
+  const photoURL = await getDownloadURL(photoReference);
 
     // Firebase upload and Firestore operations continue here
       await uploadBytes(photoReference, photo);
