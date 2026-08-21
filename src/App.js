@@ -26,6 +26,8 @@ import StyleRequestDetailPage from "./pages/StyleRequestDetailPage";
 import StyleConnectionsPage from "./pages/StyleConnectionsPage";
 import ProfileSetup from "./pages/ProfileSetup";
 import PublicStyleProfilePage from "./pages/PublicStyleProfilePage";
+import AddStyleEntry from "./pages/AddStyleEntry";
+import ChoosePieceToStylePage from "./pages/ChoosePieceToStylePage";
 
 const CURATOR_EMAIL = "corinanicoara01@gmail.com";
 
@@ -61,6 +63,10 @@ function App() {
             <Route path="/curation/:id/edit" element={<EditCurationPage />} />
             <Route path="/community-style" element={<CommunityStyle />} />
             <Route path="/community-style/:itemName" element={<CommunityItemDetailPage user={user} />} />
+            <Route
+  path="/library/:ownerId/:itemId"
+  element={<CommunityItemDetailPage user={user} />}
+/>
             <Route path="/library" element={<MasterWardrobeLibrary user={user} />} />
             <Route path="/style-requests" element={<StyleRequestsPage user={user} />} />
             <Route
@@ -110,6 +116,22 @@ function App() {
               element={
                 <PrivateRoute user={user}>
                   <ItemDetailPage user={user} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/item/:itemId/style"
+              element={
+                <PrivateRoute user={user}>
+                  <AddStyleEntry />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/share-a-look"
+              element={
+                <PrivateRoute user={user}>
+                  <ChoosePieceToStylePage user={user} />
                 </PrivateRoute>
               }
             />

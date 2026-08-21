@@ -28,6 +28,7 @@ export default function WardrobeLibrary({ user }) {
   const [material, setMaterial] = useState("");
   const [tags, setTags] = useState("");
   const [inspiration, setInspiration] = useState("");
+  const [isPublic, setIsPublic] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState("");
 
@@ -85,9 +86,14 @@ export default function WardrobeLibrary({ user }) {
           .map((tag) => tag.trim().toLowerCase())
           .filter(Boolean),
         inspiration: inspiration.trim(),
-        createdAt: new Date(),
-        isPublic: false,
-        isFounderPiece: user.email === "corinanicoara01@gmail.com",
+whyILoveIt: inspiration.trim(),
+createdAt: new Date(),
+
+ // Save both names for compatibility with existing pages
+isPublic,
+shared: isPublic,
+
+isFounderPiece: user.email === "corinanicoara01@gmail.com",
       });
 
       setNewItemName("");
@@ -98,6 +104,7 @@ export default function WardrobeLibrary({ user }) {
       setMaterial("");
       setTags("");
       setInspiration("");
+      setIsPublic(false);
     } catch (error) {
       console.error("Unable to add wardrobe piece", error);
       alert("We couldn't add this piece. Please try again.");
@@ -149,8 +156,80 @@ export default function WardrobeLibrary({ user }) {
           Your Wardrobe Library
         </h2>
         <p className="text-center text-gray-700 mb-10 text-sm italic">
-          A quiet space to honor the clothes you already love.
+          A curated home for the pieces you genuinely love—and all the ways you make them your own.
         </p>
+
+        <section className="mb-14 border border-stone-300 bg-white bg-opacity-85 p-6 md:p-10">
+          <div className="text-center">
+            <p className="text-xs uppercase tracking-[0.25em] text-rose-700">Start with what you need today</p>
+            <h2 className="mt-3 text-3xl font-semibold text-stone-900">
+              How would you like to participate?
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+              You do not have to choose one permanent role. Ask for help, share your
+              styling eye, or move between both whenever you like.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <article className="border border-rose-300 bg-rose-50 p-6 text-left">
+              <p className="text-xs uppercase tracking-[0.2em] text-rose-700">I want fresh ideas</p>
+              <h3 className="mt-2 text-2xl text-stone-900">Get styling help</h3>
+              <p className="mt-3 text-sm leading-6 text-stone-600">
+                Choose a piece you own, explain what feels difficult, and invite the
+                community to suggest new combinations. A wearing photo is optional.
+              </p>
+              {items.length > 0 ? (
+                <div>
+                  <Link
+                    to="/style-requests/new"
+                    className="mt-5 inline-block bg-stone-900 px-5 py-3 text-sm font-medium text-white hover:bg-rose-800"
+                  >
+                    Ask for inspiration
+                  </Link>
+                  <Link
+                    to="/style-requests?mode=mine"
+                    className="mt-4 block text-sm text-rose-700 underline"
+                  >
+                    View my style questions
+                  </Link>
+                </div>
+              ) : (
+                <a
+                  href="#add-piece"
+                  className="mt-5 inline-block bg-stone-900 px-5 py-3 text-sm font-medium text-white hover:bg-rose-800"
+                >
+                  Add my first piece
+                </a>
+              )}
+            </article>
+
+            <article className="border border-stone-400 bg-stone-900 p-6 text-left text-white">
+              <p className="text-xs uppercase tracking-[0.2em] text-rose-200">I have styling ideas</p>
+              <h3 className="mt-2 text-2xl">Share styling talent</h3>
+              <p className="mt-3 text-sm leading-6 text-stone-300">
+                Help someone style a piece, or share a complete or cropped outfit
+                showing how you made one of your own pieces work.
+              </p>
+              <Link
+                to="/share-a-look"
+                className="mt-5 inline-block bg-rose-600 px-5 py-3 text-sm font-medium text-white hover:bg-rose-700"
+              >
+                Choose one piece to style
+              </Link>
+              <Link
+                to="/style-requests?mode=help"
+                className="mt-4 block text-sm text-rose-200 underline hover:text-white"
+              >
+                Or browse style questions
+              </Link>
+            </article>
+          </div>
+
+          <p className="mt-6 text-center text-xs text-stone-500">
+            Prefer to organize first? Continue to your private wardrobe below.
+          </p>
+        </section>
 
         {items.length === 0 ? (
           <p className="text-center text-gray-600 mb-8">
@@ -159,8 +238,11 @@ export default function WardrobeLibrary({ user }) {
         ) : (
           <div className="flex flex-wrap gap-8 justify-center items-start mb-10">
             {items.map((item) => (
-              <Link to={`/item/${item.id}`} key={item.id}>
-                <div className="relative shadow-md border border-neutral-300 bg-gradient-to-br from-white via-neutral-100 to-neutral-200 p-3 w-60 hover:shadow-lg transition">
+              <article
+                key={item.id}
+                className="relative w-72 border border-neutral-300 bg-gradient-to-br from-white via-neutral-100 to-neutral-200 p-3 shadow-md transition hover:shadow-lg"
+              >
+                <Link to={`/item/${item.id}`} className="block">
                   {item.imageUrl && (
                     <img
                       src={item.imageUrl}
@@ -173,22 +255,42 @@ export default function WardrobeLibrary({ user }) {
                     <h3 className="text-sm font-medium text-rose-700 truncate">
                       {item.name}
                     </h3>
-                    <button
-                      type="button"
-                      onClick={(event) => deleteItem(event, item)}
-                      disabled={deletingId === item.id}
-                      className="mt-2 text-xs text-neutral-500 underline hover:text-red-600 disabled:opacity-50"
-                    >
-                      {deletingId === item.id ? "Deleting…" : "Delete piece"}
-                    </button>
                   </div>
+                </Link>
+                <div className="mt-4 grid gap-2 border-t border-neutral-200 pt-4">
+                  <Link
+                    to={`/item/${item.id}/style`}
+                    className="bg-rose-700 px-3 py-2 text-center text-xs font-medium text-white hover:bg-rose-800"
+                  >
+                   Add my styling interpretation
+                  </Link>
+                  <Link
+                    to={`/style-requests/new?piece=${item.id}`}
+                    className="border border-stone-500 px-3 py-2 text-center text-xs font-medium text-stone-700 hover:border-rose-600 hover:text-rose-700"
+                  >
+                    Ask for styling help
+                  </Link>
+                  <Link
+                    to={`/item/${item.id}`}
+                    className="py-1 text-center text-xs text-stone-500 underline hover:text-rose-700"
+                  >
+                    View or edit piece
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={(event) => deleteItem(event, item)}
+                    disabled={deletingId === item.id}
+                    className="py-1 text-xs text-neutral-400 underline hover:text-red-600 disabled:opacity-50"
+                  >
+                    {deletingId === item.id ? "Deleting…" : "Delete piece"}
+                  </button>
                 </div>
-              </Link>
+              </article>
             ))}
           </div>
         )}
 
-        <div className="relative w-full flex justify-center mt-12">
+        <div id="add-piece" className="relative w-full flex justify-center mt-12 scroll-mt-8">
           <div className="text-center max-w-md w-full">
             <h4 className="text-2xl text-rose-800 font-medium mb-2">Add a piece you love</h4>
             <p className="mb-2 text-xs font-medium uppercase tracking-wider text-rose-700">
@@ -304,13 +406,65 @@ export default function WardrobeLibrary({ user }) {
                   />
                 </div>
               </details>
-              <button
-                onClick={addItem}
-                disabled={uploading}
-                className="w-full px-6 py-3 bg-rose-600 text-white rounded-full text-sm font-medium hover:bg-rose-700 transition disabled:opacity-50"
-              >
-                {uploading ? "Adding your piece…" : "Add to my private wardrobe"}
-              </button>
+ 
+                <fieldset className="border border-stone-300 bg-white bg-opacity-80 p-4 text-left">
+  <legend className="px-2 text-sm font-medium text-stone-800">
+    Who can see this piece?
+  </legend>
+
+  <div className="mt-2 space-y-3">
+    <label className="flex cursor-pointer items-start gap-3">
+      <input
+        type="radio"
+        name="pieceVisibility"
+        checked={!isPublic}
+        onChange={() => setIsPublic(false)}
+        className="mt-1"
+      />
+
+      <span>
+        <span className="block text-sm font-medium text-stone-800">
+          Keep it private
+        </span>
+        <span className="mt-1 block text-xs leading-5 text-stone-500">
+          Save it only in my personal Loved Wardrobe. I can share it later.
+        </span>
+      </span>
+    </label>
+
+    <label className="flex cursor-pointer items-start gap-3">
+      <input
+        type="radio"
+        name="pieceVisibility"
+        checked={isPublic}
+        onChange={() => setIsPublic(true)}
+        className="mt-1"
+      />
+
+      <span>
+        <span className="block text-sm font-medium text-stone-800">
+          Add it to the public Loved Pieces Library
+        </span>
+        <span className="mt-1 block text-xs leading-5 text-stone-500">
+          Let others appreciate this piece, discover your interpretations,
+          and connect with you through similar style.
+        </span>
+      </span>
+    </label>
+  </div>
+</fieldset>
+      <button
+  type="button"
+  onClick={addItem}
+  disabled={uploading}
+  className="w-full bg-rose-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-rose-700 disabled:opacity-50"
+>
+  {uploading
+    ? "Adding your loved piece…"
+    : isPublic
+      ? "Share in the Loved Pieces Library"
+      : "Add to my private Loved Wardrobe"}
+</button>
             </div>
           </div>
         </div>

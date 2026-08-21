@@ -85,12 +85,15 @@ export default function MasterWardrobeLibrary({ user }) {
 
       if (normalizedSearch) {
         const searchableText = [
-          piece.name,
-          piece.category,
-          piece.brand,
-          piece.inspiration,
-          ...(piece.tags || []),
-        ]
+  piece.name,
+  piece.category,
+  piece.brand,
+  piece.color,
+  piece.material,
+  piece.whyILoveIt,
+  piece.inspiration,
+  ...(piece.tags || []),
+]
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
@@ -149,8 +152,9 @@ export default function MasterWardrobeLibrary({ user }) {
             The Wardrobe Library
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-stone-600 md:text-lg">
-            A shared collection of clothes people genuinely love—and all the ways
-            they make those pieces their own.
+            A curated collection of clothes people genuinely appreciate. Begin with one
+  centerpiece, explore how different people interpreted it, and discover owners
+  of the same or similar pieces.
           </p>
         </div>
       </section>
@@ -263,6 +267,9 @@ export default function MasterWardrobeLibrary({ user }) {
                         <p className="mt-1 text-xs uppercase tracking-widest text-stone-500">
                           {piece.category || "Loved piece"}
                         </p>
+                        <p className="mt-2 text-xs font-medium text-rose-700">
+  Open this centerpiece →
+</p>
                       </div>
                       {piece.isFounderPiece && (
                         <span className="shrink-0 bg-rose-100 px-2 py-1 text-[10px] uppercase tracking-wider text-rose-800">
@@ -270,11 +277,11 @@ export default function MasterWardrobeLibrary({ user }) {
                         </span>
                       )}
                     </div>
-                    {piece.inspiration && (
-                      <p className="mt-3 line-clamp-2 text-sm italic leading-6 text-stone-600">
-                        “{piece.inspiration}”
-                      </p>
-                    )}
+                    {(piece.whyILoveIt || piece.inspiration) && (
+  <p className="mt-3 line-clamp-2 text-sm italic leading-6 text-stone-600">
+    “{piece.whyILoveIt || piece.inspiration}”
+  </p>
+)}
                     <p className="mt-3 text-xs text-stone-500">
                       Shared by{" "}
                       <MemberName
